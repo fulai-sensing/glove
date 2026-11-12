@@ -7,6 +7,8 @@ Open `index.html` directly in a browser, or publish this entire directory on any
 - `index.html` — complete English content, with the two product overviews and all 17 manual chapters and two appendices.
 - `css/styles.css` — responsive layouts and print styles.
 - `js/app.js` — chapter navigation, local full-text search, image preview, clipboard actions, checklist, and print options.
+- `js/i18n.js` — browser-language detection, manual language selection, and local preference storage.
+- `js/zh.js` — Chinese translations for the English HTML and interactive messages.
 - `img/` — deduplicated, losslessly converted source illustrations and a local favicon.
 - `downloads/` — unchanged original Word documents for reference.
 
@@ -19,3 +21,7 @@ The product overviews are dated 24 October 2026 and describe software V1.1.3. Ca
 Source differences are explained in the model comparison and source notes. They include recording duration, CSV organization, interface language, and exported shear units. The capacitive overview contains inconsistent fingertip spatial resolution values; both are retained and explicitly identified. Capacitive hardware V1.0 compatibility with the detailed manual is not assumed.
 
 The HTML is the editable content source. Update `index.html` for content changes; search indexes its rendered text automatically. Keep existing IDs when possible to preserve direct links.
+
+The language selector offers Browser language (default), 中文, and English. Browser language uses the browser's first preferred language: `zh` and its regional variants display Simplified Chinese; English and unsupported languages display English. Manual selections persist in local storage when available. Switching back to Browser language resumes automatic detection, including browser language changes. Missing Chinese translations fall back to the original English. Update the English-to-Chinese dictionary in `js/zh.js` when changing content. Code samples, protocol fields, source images, and downloadable originals retain their original content. Without JavaScript, the complete English guide remains available.
+
+For browser regression checks, make Playwright available to Node and run `node --test docs/tests/language.test.cjs`. Set `PLAYWRIGHT_CHANNEL=msedge` or `chrome` to use an installed browser instead of Playwright's bundled Chromium. This is only needed for development; the site has no runtime dependencies.

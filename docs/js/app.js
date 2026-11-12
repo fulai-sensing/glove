@@ -1,6 +1,7 @@
 /* Native, offline documentation: deliberately no fetch, modules or dependencies. */
 (() => {
   'use strict';
+  const t = window.FulaiI18n.t;
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
   const pages = $$('.doc-page');
@@ -40,7 +41,7 @@
   function setNavigation(open) {
     document.body.classList.toggle('nav-open', open);
     menuToggle.setAttribute('aria-expanded', String(open));
-    menuToggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+    menuToggle.setAttribute('aria-label', t(open ? 'Close navigation' : 'Open navigation'));
     sidebar.inert = mobile.matches && !open;
   }
   menuToggle.addEventListener('click', () => setNavigation(!document.body.classList.contains('nav-open')));
@@ -87,8 +88,8 @@
     const previous = pageMap.get(order[index - 1]);
     const next = pageMap.get(order[index + 1]);
     $('#page-navigation').innerHTML = page.id === 'overview' ? '' :
-      (previous ? `<a class="previous" href="#${previous.id}"><span>Previous</span>← ${escape(previous.dataset.title)}</a>` : '') +
-      (next ? `<a class="next" href="#${next.id}"><span>Next</span>${escape(next.dataset.title)} →</a>` : '');
+      (previous ? `<a class="previous" href="#${previous.id}"><span>${t('Previous')}</span>← ${escape(previous.dataset.title)}</a>` : '') +
+      (next ? `<a class="next" href="#${next.id}"><span>${t('Next')}</span>${escape(next.dataset.title)} →</a>` : '');
   }
 
   function route(initial = false) {
@@ -102,7 +103,7 @@
     activePage = page;
     document.documentElement.classList.add('js');
     workspace.classList.toggle('home-layout', page.id === 'overview');
-    document.title = `${page.dataset.title} | FULAI Tactile Glove Documentation`;
+    document.title = `${page.dataset.title} | ${t('FULAI Tactile Glove Documentation')}`;
     $('#breadcrumb-title').textContent = page.dataset.title;
     navigation.forEach(link => {
       if (link.dataset.page === page.id) link.setAttribute('aria-current', 'page');
@@ -133,24 +134,28 @@
   });
   // Make direct links to search results reproducible across reloads.
   const searchIndex = [];
-  pages.forEach(page => {
-    let heading = page.dataset.title;
-    let sectionId = page.id;
-    searchIndex.push({ page: page.id, id: page.id, title: page.dataset.title, heading: '', text: plainText($('.lead', page) || $('.hero-copy p', page) || $('p', page) || page).slice(0, 300), isTitle: true });
-    $$('h2,h3,p,li,tbody tr,summary,pre code,figcaption,.checklist-item', page).forEach((node, index) => {
-      if (node.closest('.article-footer,.home-footer,.code-bar')) return;
-      if (node.matches('h2,h3')) {
-        heading = plainText(node);
-        if (!node.id) node.id = `${page.id}-heading-${index}`;
-        sectionId = node.id;
-      }
-      const text = plainText(node);
-      if (text.length < 15 && !node.matches('h2,h3')) return;
-      if (!node.id) node.id = `${page.id}-text-${index}`;
-      searchIndex.push({ page: page.id, id: node.id, title: page.dataset.title, heading: heading === page.dataset.title ? '' : heading, text, sectionId });
+  function rebuildSearchIndex() {
+    searchIndex.length = 0;
+    pages.forEach(page => {
+      let heading = page.dataset.title;
+      let sectionId = page.id;
+      searchIndex.push({ page: page.id, id: page.id, title: page.dataset.title, heading: '', text: plainText($('.lead', page) || $('.hero-copy p', page) || $('p', page) || page).slice(0, 300), isTitle: true });
+      $$('h2,h3,p,li,tbody tr,summary,pre code,figcaption,.checklist-item', page).forEach((node, index) => {
+        if (node.closest('.article-footer,.home-footer,.code-bar')) return;
+        if (node.matches('h2,h3')) {
+          heading = plainText(node);
+          if (!node.id) node.id = `${page.id}-heading-${index}`;
+          sectionId = node.id;
+        }
+        const text = plainText(node);
+        if (!text) return;
+        if (!node.id) node.id = `${page.id}-text-${index}`;
+        searchIndex.push({ page: page.id, id: node.id, title: page.dataset.title, heading: heading === page.dataset.title ? '' : heading, text, sectionId });
+      });
     });
-  });
-  searchIndex.forEach(entry => { entry.haystack = normalize(entry.title + ' ' + entry.heading + ' ' + entry.text); });
+    searchIndex.forEach(entry => { entry.haystack = normalize(entry.title + ' ' + entry.heading + ' ' + entry.text); });
+  }
+  rebuildSearchIndex();
 
   function highlighted(text, tokens) {
     // Escape first; highlights are assembled from plain-text offsets, never user HTML.
@@ -191,7 +196,7 @@
     let results;
     if (!query) {
       results = ['quick-start', 'calibration', 'csv', 'tcp', 'troubleshooting'].map(id => searchIndex.find(entry => entry.id === id));
-      searchStatus.textContent = 'Popular guides · Search all chapters, specifications, and data fields.';
+      searchStatus.textContent = t('Popular guides · Search all chapters, specifications, and data fields.');
     } else {
       results = searchIndex.filter(entry => tokens.every(token => entry.haystack.includes(token))).map(entry => {
         const title = normalize(entry.title);
@@ -201,14 +206,14 @@
       }).sort((a, b) => b.score - a.score);
       const total = results.length;
       results = results.slice(0, 30);
-      searchStatus.textContent = total ? `${total} matching passages${total > 30 ? ' · Showing the first 30' : ''}` : 'No matching passages';
+      searchStatus.textContent = total ? t('{total} matching passages', { total }) + (total > 30 ? t(' · Showing the first 30') : '') : t('No matching passages');
     }
     searchResults.innerHTML = results.length ? results.map(entry => {
       const firstMatch = tokens.length ? Math.min(...tokens.map(token => normalize(entry.text).indexOf(token)).filter(index => index >= 0)) : 0;
       const start = Number.isFinite(firstMatch) ? Math.max(0, firstMatch - 70) : 0;
       const snippet = (start > 0 ? '…' : '') + entry.text.slice(start, start + 210) + (entry.text.length > start + 210 ? '…' : '');
       return `<a class="search-result" href="#${entry.id}"><small>${escape(entry.title)}</small><strong>${highlighted(entry.heading || entry.title, tokens)}</strong><p>${highlighted(snippet, tokens)}</p></a>`;
-    }).join('') : '<div class="search-empty">No results. Try “COM port”, “calibration”, “Elapsed Time”, or “TCP”.</div>';
+    }).join('') : `<div class="search-empty">${t('No results. Try “COM port”, “calibration”, “Elapsed Time”, or “TCP”.')}</div>`;
     searchLinks = $$('.search-result', searchResults);
     selectedResult = -1;
     searchLinks.forEach(link => link.addEventListener('click', () => {
@@ -279,7 +284,7 @@
       input.remove();
       button.focus({ preventScroll: true });
     }
-    notify(copied ? 'Copied to clipboard' : 'Copy unavailable. Select and copy the code directly.');
+    notify(t(copied ? 'Copied to clipboard' : 'Copy unavailable. Select and copy the code directly.'));
   }));
 
   const checkboxes = $$('[data-check]');
@@ -290,14 +295,14 @@
   } catch { /* The checklist remains functional without storage. */ }
   function updateChecklist(save = true) {
     const count = checkboxes.filter(checkbox => checkbox.checked).length;
-    $('#checklist-count').textContent = `${count} of ${checkboxes.length} checked${count === checkboxes.length ? ' · Complete' : ''}`;
+    $('#checklist-count').textContent = t('{count} of {total} checked', { count, total: checkboxes.length }) + (count === checkboxes.length ? t(' · Complete') : '');
     $('#checklist-progress').value = count;
     if (save) {
       try { localStorage.setItem(checklistKey, JSON.stringify(checkboxes.map(checkbox => checkbox.checked))); } catch { /* storage optional */ }
     }
   }
   checkboxes.forEach(checkbox => checkbox.addEventListener('change', () => updateChecklist()));
-  $('#reset-checklist').addEventListener('click', () => { checkboxes.forEach(checkbox => { checkbox.checked = false; }); updateChecklist(); notify('Checklist reset for a new session'); });
+  $('#reset-checklist').addEventListener('click', () => { checkboxes.forEach(checkbox => { checkbox.checked = false; }); updateChecklist(); notify(t('Checklist reset for a new session')); });
   updateChecklist(false);
 
   let closedDetails = [];
@@ -326,5 +331,21 @@
   $('#print-current').addEventListener('click', () => printGuide(false));
   $('#print-all').addEventListener('click', () => printGuide(true));
 
+  window.addEventListener('fulai-languagechange', () => {
+    document.title = `${activePage.dataset.title} | ${t('FULAI Tactile Glove Documentation')}`;
+    $('#breadcrumb-title').textContent = activePage.dataset.title;
+    renderToc(activePage);
+    renderNeighbors(activePage);
+    rebuildSearchIndex();
+    updateChecklist(false);
+    setNavigation(document.body.classList.contains('nav-open'));
+    if (searchDialog.open) renderSearch();
+    const image = $$('.image-link img').find(item => item.getAttribute('src') === $('#enlarged-image').getAttribute('src'));
+    if (imageDialog.open && image) {
+      $('#enlarged-image').alt = image.alt;
+      $('#image-dialog-caption').textContent = $('figcaption', image.closest('figure')).textContent;
+    }
+    $('#toast').classList.remove('visible');
+  });
   route(true);
 })();
