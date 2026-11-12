@@ -2,12 +2,14 @@
 (() => {
   'use strict';
   const key = 'fulai-documentation-language';
-  const modes = ['auto', 'zh', 'en'];
+  const languages = ['zh', 'en'];
   const normalize = text => text.replace(/\s+/g, ' ').trim();
+  // Automatic detection is the initial behavior, not a selectable option.
+  // Legacy "auto" preferences and unknown values use the browser default.
   let mode = 'auto';
   try {
     const saved = localStorage.getItem(key);
-    if (modes.includes(saved)) mode = saved;
+    if (languages.includes(saved)) mode = saved;
   } catch { /* Language switching also works when storage is unavailable. */ }
 
   function resolveLanguage() {
@@ -47,11 +49,12 @@
       node.data = language === 'en' ? english : english.replace(/\S(?:[\s\S]*\S)?/, text => t(normalize(text)));
     });
     attributes.forEach(({ node, name, english }) => node.setAttribute(name, t(english)));
-    selector.value = mode;
+    selector.value = language;
   }
   window.FulaiI18n = { t, get language() { return language; }, get mode() { return mode; } };
   selector.addEventListener('change', () => {
-    mode = modes.includes(selector.value) ? selector.value : 'auto';
+    if (!languages.includes(selector.value)) return;
+    mode = selector.value;
     try { localStorage.setItem(key, mode); } catch { /* storage optional */ }
     apply();
     window.dispatchEvent(new Event('fulai-languagechange'));

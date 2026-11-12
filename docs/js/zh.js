@@ -903,7 +903,6 @@ window.FULAI_ZH = Object.freeze({
   "CHAPTER 16": "第 16 章",
   "CHAPTER 17": "第 17 章",
   "Language": "语言",
-  "Browser language": "跟随浏览器",
   "FULAI Tactile Glove Documentation": "FULAI 触觉手套文档",
   "Previous": "上一章",
   "Next": "下一章",

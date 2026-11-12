@@ -29,15 +29,15 @@ for (const [locale, expected] of [['zh-CN', 'zh-CN'], ['zh-TW', 'zh-CN'], ['zh-H
   test(`Defaults to browser language with English fallback: ${locale}`, async t => {
     const page = await open(t, locale);
     assert.equal(await page.locator('html').getAttribute('lang'), expected);
-    assert.equal(await page.locator('#language-mode').inputValue(), 'auto');
-    assert.equal(await page.locator('#language-mode option').count(), 3);
+    assert.equal(await page.locator('#language-mode').inputValue(), expected === 'en' ? 'en' : 'zh');
+    assert.deepEqual(await page.locator('#language-mode option').allTextContents(), ['中文', 'English']);
     assert.equal(await page.locator('#hero-title').textContent(), expected === 'en' ? 'Tactile GloveDocumentation' : '触觉手套文档');
   });
 }
 
-test('Manual modes persist, override the browser, and return to automatic detection', async t => {
+test('Manual choices persist and override the browser default', async t => {
   const page = await open(t, 'fr-FR');
-  for (const [mode, lang] of [['zh', 'zh-CN'], ['en', 'en'], ['auto', 'en']]) {
+  for (const [mode, lang] of [['zh', 'zh-CN'], ['en', 'en']]) {
     await page.selectOption('#language-mode', mode);
     assert.equal(await page.locator('html').getAttribute('lang'), lang);
     assert.equal(await page.evaluate(key => localStorage.getItem(key), storageKey), mode);
@@ -52,25 +52,34 @@ test('Invalid preferences, unsupported primary language, and missing translation
     localStorage.setItem('fulai-documentation-language', 'invalid');
     Object.defineProperty(navigator, 'languages', { get: () => ['fr-FR', 'zh-CN'] });
   });
-  assert.equal(await page.locator('#language-mode').inputValue(), 'auto');
+  assert.equal(await page.locator('#language-mode').inputValue(), 'en');
   assert.equal(await page.locator('html').getAttribute('lang'), 'en');
   await page.selectOption('#language-mode', 'zh');
   assert.equal(await page.evaluate(() => FulaiI18n.t('Untranslated English')), 'Untranslated English');
   assert.equal(await page.evaluate(() => FulaiI18n.t('constructor')), 'constructor');
 });
 
-test('Automatic mode follows browser changes; explicit mode does not', async t => {
+test('The default follows browser changes until a manual choice is made', async t => {
   const page = await open(t, 'en-US');
   await page.evaluate(() => {
     Object.defineProperty(navigator, 'languages', { configurable: true, get: () => ['zh-Hans-CN'] });
     window.dispatchEvent(new Event('languagechange'));
   });
   assert.equal(await page.locator('html').getAttribute('lang'), 'zh-CN');
+  assert.equal(await page.locator('#language-mode').inputValue(), 'zh');
   await page.selectOption('#language-mode', 'en');
   await page.evaluate(() => window.dispatchEvent(new Event('languagechange')));
   assert.equal(await page.locator('html').getAttribute('lang'), 'en');
-  await page.selectOption('#language-mode', 'auto');
+  assert.equal(await page.locator('#language-mode').inputValue(), 'en');
+});
+
+test('A saved legacy auto preference selects the actual browser language', async t => {
+  const page = await open(t, 'zh-CN', () => {
+    localStorage.setItem('fulai-documentation-language', 'auto');
+  });
   assert.equal(await page.locator('html').getAttribute('lang'), 'zh-CN');
+  assert.equal(await page.locator('#language-mode').inputValue(), 'zh');
+  assert.equal(await page.locator('#language-mode option[value="auto"]').count(), 0);
 });
 
 test('Language switching remains usable when browser storage is blocked', async t => {
@@ -80,7 +89,7 @@ test('Language switching remains usable when browser storage is blocked', async 
   assert.equal(await page.locator('html').getAttribute('lang'), 'zh-CN');
   await page.selectOption('#language-mode', 'en');
   assert.equal(await page.locator('html').getAttribute('lang'), 'en');
-  await page.selectOption('#language-mode', 'auto');
+  await page.selectOption('#language-mode', 'zh');
   assert.equal(await page.locator('html').getAttribute('lang'), 'zh-CN');
 });
 
@@ -133,7 +142,7 @@ test('Language control fits narrow mobile screens and remains keyboard accessibl
   const page = await open(t, 'en-US');
   for (const width of [320, 375, 768, 1024]) {
     await page.setViewportSize({ width, height: 900 });
-    for (const mode of ['en', 'zh', 'auto']) {
+    for (const mode of ['en', 'zh']) {
       await page.selectOption('#language-mode', mode);
       assert.equal(await page.locator('#language-mode').isVisible(), true);
       const bounds = await page.locator('#language-mode').boundingBox();
