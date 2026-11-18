@@ -41,6 +41,38 @@
       if (node.hasAttribute(name)) attributes.push({ node, name, english: node.getAttribute(name) });
     });
   });
+  const localizedImages = [...document.querySelectorAll('.image-link[data-zh-src]')];
+  const localizedDownloads = [...document.querySelectorAll('[data-zh-href]')];
+  function applyLocalizedAssets() {
+    localizedImages.forEach(link => {
+      const image = link.querySelector('img');
+      if (!link.dataset.enHref) link.dataset.enHref = link.getAttribute('href') || '';
+      if (image && !image.dataset.enSrc) {
+        image.dataset.enSrc = image.getAttribute('src') || '';
+        image.dataset.enWidth = image.getAttribute('width') || '';
+        image.dataset.enHeight = image.getAttribute('height') || '';
+      }
+      const source = language === 'zh' ? link.dataset.zhSrc : link.dataset.enHref;
+      link.setAttribute('href', source);
+      if (image) {
+        image.setAttribute('src', language === 'zh' ? link.dataset.zhSrc : image.dataset.enSrc);
+        if (language === 'zh') {
+          image.removeAttribute('width');
+          image.removeAttribute('height');
+        } else {
+          if (image.dataset.enWidth) image.setAttribute('width', image.dataset.enWidth);
+          if (image.dataset.enHeight) image.setAttribute('height', image.dataset.enHeight);
+        }
+      }
+    });
+    localizedDownloads.forEach(link => {
+      if (!link.dataset.enHref) link.dataset.enHref = link.getAttribute('href') || '';
+      if (!link.dataset.enDownload && link.hasAttribute('download')) link.dataset.enDownload = link.getAttribute('download');
+      const href = language === 'zh' ? link.dataset.zhHref : link.dataset.enHref;
+      link.setAttribute('href', href);
+      if (link.dataset.enDownload) link.setAttribute('download', language === 'zh' && link.dataset.zhDownload ? link.dataset.zhDownload : link.dataset.enDownload);
+    });
+  }
   const selector = document.getElementById('language-mode');
   function apply() {
     language = resolveLanguage();
@@ -49,6 +81,7 @@
       node.data = language === 'en' ? english : english.replace(/\S(?:[\s\S]*\S)?/, text => t(normalize(text)));
     });
     attributes.forEach(({ node, name, english }) => node.setAttribute(name, t(english)));
+    applyLocalizedAssets();
     selector.value = language;
   }
   window.FulaiI18n = { t, get language() { return language; }, get mode() { return mode; } };

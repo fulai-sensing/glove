@@ -264,6 +264,7 @@
     const source = $('img', link);
     $('#enlarged-image').src = source.getAttribute('src');
     $('#enlarged-image').alt = source.alt;
+    $('#enlarged-image').dataset.figure = link.closest('figure')?.id || '';
     $('#image-dialog-caption').textContent = $('figcaption', link.closest('figure')).textContent;
     imageDialog.classList.remove('zoomed');
     showDialog(imageDialog);
@@ -340,8 +341,10 @@
     updateChecklist(false);
     setNavigation(document.body.classList.contains('nav-open'));
     if (searchDialog.open) renderSearch();
-    const image = $$('.image-link img').find(item => item.getAttribute('src') === $('#enlarged-image').getAttribute('src'));
+    const figureId = $('#enlarged-image').dataset.figure;
+    const image = figureId ? $(`#${figureId} .image-link img`) : $$('.image-link img').find(item => item.getAttribute('src') === $('#enlarged-image').getAttribute('src'));
     if (imageDialog.open && image) {
+      $('#enlarged-image').src = image.getAttribute('src');
       $('#enlarged-image').alt = image.alt;
       $('#image-dialog-caption').textContent = $('figcaption', image.closest('figure')).textContent;
     }
