@@ -10,7 +10,7 @@ Open `index.html` directly in a browser, or publish this entire directory on any
 - `js/i18n.js` — browser-language detection, manual language selection, and local preference storage.
 - `js/zh.js` — Chinese translations for the English HTML and interactive messages.
 - `img/` — deduplicated, losslessly converted source illustrations and a local favicon.
-- `downloads/` — source Word documents, the Chinese V1.1.6 manual, and the glove calibration bundle.
+- `downloads/` — source Word documents, Chinese product overviews, the Chinese V1.1.6 manual, and the glove calibration bundle.
 - `downloads/calibration/` — the glove-specific V3.2 JSON calibration files available for download.
 
 The full document remains readable without JavaScript. When JavaScript is enabled, navigation displays one chapter at a time. Chapter and figure links use URL fragments and support browser Back and Forward. Search runs entirely in the browser and does not upload content. Checklist state is saved locally when browser storage is available.
