@@ -6,21 +6,64 @@ const { pathToFileURL } = require('node:url');
 const path = require('node:path');
 const url = pathToFileURL(path.resolve(__dirname, '../index.html')).href;
 const storageKey = 'fulai-documentation-language';
+const calibrationManifest = require('../data/calibration-files.json');
+// Small independent fixtures: these tests do not need the legacy local originals.
+const calibrationFixtures = new Map(calibrationManifest.files.map(file => [file.name,
+  Buffer.from(JSON.stringify({ glove_version: file.version, hand: file.hand, fixture: file.name, values: [1, 2, 3] }))
+]));
+let calibrationZipFixture;
 let browser;
+let server;
+let hostedUrl;
 
 before(async () => {
+  const zip = new (require('jszip'))();
+  for (const [name, bytes] of calibrationFixtures) zip.file('calibration/' + name, bytes);
+  calibrationZipFixture = await zip.generateAsync({ type: 'nodebuffer' });
   browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHANNEL ? { channel: process.env.PLAYWRIGHT_CHANNEL } : {}) });
+  const fs = require('node:fs/promises');
+  const root = path.resolve(__dirname, '..');
+  server = require('node:http').createServer(async (request, response) => {
+    if (request.url.startsWith('/downloads/calibration')) { response.writeHead(410).end('Calibration files are on OSS'); return; }
+    const file = path.resolve(root, '.' + decodeURIComponent(new URL(request.url, 'http://localhost').pathname));
+    if (!file.startsWith(root + path.sep)) { response.writeHead(403).end(); return; }
+    try {
+      const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
+      response.setHeader('Content-Type', types[path.extname(file)] || 'application/octet-stream');
+      response.end(await fs.readFile(file));
+    } catch { response.writeHead(404).end(); }
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  hostedUrl = `http://127.0.0.1:${server.address().port}/index.html`;
 });
-after(async () => { await browser?.close(); });
+after(async () => {
+  await browser?.close();
+  if (server) await new Promise(resolve => server.close(resolve));
+});
 
 async function open(t, locale, setup) {
   const context = await browser.newContext({ locale, reducedMotion: 'reduce' });
   t.after(() => context.close());
   if (setup) await context.addInitScript(setup);
+  await context.route('https://oss.fulai.studio/fulai_sensing_glove/**', async route => {
+    const requested = route.request().url();
+    if (requested === calibrationManifest.bundleUrl) {
+      await route.fulfill({ status: 200, contentType: 'application/zip', body: calibrationZipFixture });
+      return;
+    }
+    const name = decodeURIComponent(requested.slice(calibrationManifest.baseUrl.length));
+    const bytes = requested.startsWith(calibrationManifest.baseUrl) && calibrationFixtures.get(name);
+    await route.fulfill({ status: bytes ? 200 : 404, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: bytes || 'missing' });
+  });
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
+  const localCalibrationRequests = [];
+  page.on('request', request => {
+    if (/\/downloads\/calibration(?:\/|\.zip)/.test(request.url())) localCalibrationRequests.push(request.url());
+  });
   t.after(() => assert.deepEqual(errors, [], 'No browser script errors'));
+  t.after(() => assert.deepEqual(localCalibrationRequests, [], 'No local calibration requests'));
   await page.goto(url);
   return page;
 }
@@ -153,4 +196,194 @@ test('Language control fits narrow mobile screens and remains keyboard accessibl
   }
   await page.locator('#language-mode').focus();
   assert.equal(await page.locator('#language-mode').evaluate(node => node === document.activeElement), true);
+});
+
+test('Calibration selection survives language changes and downloads only selected original files', async t => {
+  const fs = require('node:fs/promises');
+  const page = await open(t, 'zh-CN');
+  await page.goto(hostedUrl + '#section-7-1');
+  const files = page.locator('#calibration [data-calibration-file]');
+  const downloadButton = page.locator('#download-selected-calibration');
+  const selectAll = page.locator('#calibration-select-all');
+  assert.equal(await downloadButton.isDisabled(), true);
+  await files.nth(0).check();
+  await files.nth(2).check();
+  assert.equal(await selectAll.evaluate(node => node.indeterminate), true);
+  assert.equal(await downloadButton.textContent(), '下载所选（2）');
+  await page.selectOption('#language-mode', 'en');
+  assert.equal(await downloadButton.textContent(), 'Download selected (2)');
+  assert.equal(await files.nth(0).isChecked(), true);
+  assert.equal(await files.nth(1).isChecked(), false);
+  assert.equal(await files.nth(2).isChecked(), true);
+  const selectedNames = await files.evaluateAll(inputs => inputs.filter(input => input.checked).map(input => input.dataset.calibrationFile));
+  const downloadEvent = page.waitForEvent('download');
+  await downloadButton.click();
+  const download = await downloadEvent;
+  assert.equal(download.suggestedFilename(), 'FULAI_Glove_Calibration_Selected.zip');
+  assert.equal(await download.failure(), null);
+  const zip = await require('jszip').loadAsync(await fs.readFile(await download.path()), { checkCRC32: true });
+  assert.deepEqual(Object.values(zip.files).filter(entry => !entry.dir).map(entry => entry.name), selectedNames.map(name => 'calibration/' + name));
+  for (const name of selectedNames) {
+    const original = calibrationFixtures.get(name);
+    assert.deepEqual(await zip.file('calibration/' + name).async('nodebuffer'), original, 'ZIP contents match original bytes');
+  }
+  await selectAll.check();
+  assert.equal(await page.locator('#calibration [data-calibration-file]:checked').count(), 37);
+  assert.equal(await selectAll.evaluate(node => node.indeterminate), false);
+  await selectAll.uncheck();
+  assert.equal(await downloadButton.isDisabled(), true);
+});
+
+test('Calibration download card fits mobile screens in both languages', async t => {
+  const page = await open(t, 'zh-CN');
+  await page.goto(hostedUrl + '#section-7-1');
+  for (const width of [320, 375, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const mode of ['en', 'zh']) {
+      await page.selectOption('#language-mode', mode);
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `No page overflow at ${width}px (${mode})`);
+      for (const selector of ['.calibration-downloads', '#download-selected-calibration', '.calibration-file a']) {
+        const bounds = await page.locator(selector).first().boundingBox();
+        assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= width, `${selector} fits ${width}px (${mode})`);
+      }
+    }
+  }
+});
+
+test('Local HTML points to the OSS ZIP and explains the required internet connection', async t => {
+  const page = await open(t, 'zh-CN');
+  await page.goto(url + '#section-7-1');
+  assert.equal(await page.locator('#download-selected-calibration').isVisible(), false);
+  assert.equal(await page.locator('#calibration [data-calibration-offline-hint]').isVisible(), true);
+  assert.equal(await page.locator('#calibration [data-calibration-bundle]').getAttribute('href'), calibrationManifest.bundleUrl);
+  const downloadEvent = page.waitForEvent('download');
+  await page.locator('#calibration .calibration-download-actions a').click();
+  const download = await downloadEvent;
+  assert.equal(await download.failure(), null);
+  assert.match(download.suggestedFilename(), /\.zip$/);
+  assert.equal(new URL(page.url()).hash, '#section-7-1');
+});
+
+test('Source documents supports search, shared selection, single JSON and selected ZIP downloads', async t => {
+  const fs = require('node:fs/promises');
+  const page = await open(t, 'zh-CN');
+  await page.goto(hostedUrl + '#source-calibration-download-title');
+  const picker = page.locator('#sources .calibration-downloads');
+  assert.equal(await picker.locator('[data-calibration-file]').count(), 37);
+  const search = picker.locator('input[type="search"]');
+  await search.fill('G-26091801');
+  assert.equal(await picker.locator('.calibration-file:visible').count(), 2, 'Search accepts hyphens for underscore filenames');
+  const left = picker.locator('[data-calibration-file="G_26091801_Left.json"]');
+  await left.check();
+  const downloadEvent = page.waitForEvent('download');
+  await picker.locator('[data-calibration-download]').click();
+  const download = await downloadEvent;
+  assert.equal(download.suggestedFilename(), 'G_26091801_Left.json');
+  assert.equal(await download.failure(), null);
+  assert.deepEqual(await fs.readFile(await download.path()), calibrationFixtures.get('G_26091801_Left.json'));
+  await picker.locator('[data-calibration-select-all]').check();
+  await page.evaluate(() => { location.hash = '#section-7-1'; });
+  await page.waitForFunction(() => document.querySelector('#calibration').classList.contains('active'));
+  assert.equal(await page.locator('#calibration [data-calibration-file]:checked').count(), 2);
+  await page.selectOption('#language-mode', 'en');
+  await page.evaluate(() => { location.hash = '#source-calibration-download-title'; });
+  await page.waitForFunction(() => document.querySelector('#sources').classList.contains('active'));
+  assert.equal(await picker.locator('[data-calibration-download]').textContent(), 'Download selected (2)');
+  const zipEvent = page.waitForEvent('download');
+  await picker.locator('[data-calibration-download]').click();
+  const zipped = await zipEvent;
+  const zip = await require('jszip').loadAsync(await fs.readFile(await zipped.path()), { checkCRC32: true });
+  assert.deepEqual(Object.keys(zip.files).filter(name => name.endsWith('.json')).sort(), ['calibration/G_26091801_Left.json', 'calibration/G_26091801_Right.json']);
+  for (const name of ['G_26091801_Left.json', 'G_26091801_Right.json']) {
+    assert.deepEqual(await zip.file('calibration/' + name).async('nodebuffer'), calibrationFixtures.get(name));
+  }
+  await search.fill('no-such-glove');
+  assert.equal(await picker.locator('.calibration-empty').isVisible(), true);
+  assert.equal(await picker.locator('[data-calibration-select-all]').isDisabled(), true);
+  assert.equal(await picker.locator('[data-calibration-download]').isEnabled(), true, 'Hidden selections remain available');
+  await picker.locator('[data-calibration-clear]').click();
+  assert.equal(await picker.locator('[data-calibration-download]').isDisabled(), true);
+  assert.equal(await page.locator('[data-calibration-file]:checked').count(), 0);
+  await search.fill('');
+  await picker.locator('[data-calibration-select-all]').check();
+  const allEvent = page.waitForEvent('download');
+  await picker.locator('[data-calibration-download]').click();
+  const all = await allEvent;
+  assert.equal(all.suggestedFilename(), 'calibration.zip');
+  assert.deepEqual(await fs.readFile(await all.path()), calibrationZipFixture);
+});
+
+test('Failed selected downloads preserve selection and allow retry without a partial ZIP', async t => {
+  const page = await open(t, 'zh-CN');
+  await page.goto(hostedUrl + '#source-calibration-download-title');
+  const picker = page.locator('#sources .calibration-downloads');
+  await picker.locator('[data-calibration-file]').nth(0).check();
+  await picker.locator('[data-calibration-file]').nth(1).check();
+  const names = await picker.locator('[data-calibration-file]:checked').evaluateAll(inputs => inputs.map(input => input.dataset.calibrationFile));
+  await page.route(calibrationManifest.baseUrl + names[1], route => route.fulfill({ status: 404, headers: { 'Access-Control-Allow-Origin': '*' }, body: 'missing' }));
+  const downloads = [];
+  page.on('download', item => downloads.push(item));
+  await picker.locator('[data-calibration-download]').click();
+  await page.waitForFunction(() => document.querySelector('#sources [data-calibration-status]').textContent.includes('失败'));
+  assert.equal(downloads.length, 0);
+  assert.equal(await picker.locator('[data-calibration-file]:checked').count(), 2);
+  assert.equal(await picker.locator('[data-calibration-download]').isEnabled(), true);
+  await page.unroute(calibrationManifest.baseUrl + names[1]);
+  const retryEvent = page.waitForEvent('download');
+  await picker.locator('[data-calibration-download]').click();
+  assert.equal(await (await retryEvent).failure(), null);
+});
+
+test('Individual row downloads save the OSS JSON with its original filename', async t => {
+  const fs = require('node:fs/promises');
+  const page = await open(t, 'zh-CN');
+  await page.goto(hostedUrl + '#source-calibration-download-title');
+  const link = page.locator('#sources .calibration-file a').first();
+  const name = await link.getAttribute('download');
+  assert.equal(await link.getAttribute('href'), calibrationManifest.baseUrl + name);
+  const event = page.waitForEvent('download');
+  await link.click();
+  const download = await event;
+  assert.equal(download.suggestedFilename(), name);
+  assert.deepEqual(await fs.readFile(await download.path()), calibrationFixtures.get(name));
+  assert.equal(new URL(page.url()).hash, '#source-calibration-download-title');
+});
+
+test('Blocked OSS reads show a direct save link and keep the full ZIP accessible', async t => {
+  const page = await open(t, 'zh-CN');
+  await page.goto(hostedUrl + '#source-calibration-download-title');
+  const picker = page.locator('#sources .calibration-downloads');
+  const link = picker.locator('.calibration-file a').first();
+  const source = await link.getAttribute('href');
+  await page.route(source, route => route.abort('accessdenied'));
+  await link.click();
+  await page.waitForFunction(() => document.querySelector('#sources [data-calibration-status]').textContent.includes('失败'));
+  const direct = picker.locator('[data-calibration-direct]');
+  assert.equal(await direct.isVisible(), true);
+  assert.equal(await direct.getAttribute('href'), source);
+  const event = page.waitForEvent('download');
+  await picker.locator('[data-calibration-bundle]').click();
+  assert.equal(await (await event).failure(), null);
+});
+
+test('The generator works without local calibration originals or a local ZIP', async t => {
+  const fs = require('node:fs/promises');
+  const os = require('node:os');
+  const { execFileSync } = require('node:child_process');
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'fulai-oss-generator-'));
+  t.after(async () => {
+    assert.equal(path.dirname(tempRoot), path.resolve(os.tmpdir()));
+    assert.ok(path.basename(tempRoot).startsWith('fulai-oss-generator-'));
+    await fs.rm(tempRoot, { recursive: true });
+  });
+  await fs.mkdir(path.join(tempRoot, 'scripts'));
+  await fs.mkdir(path.join(tempRoot, 'data'));
+  for (const file of ['index.html', 'scripts/sync-calibration-downloads.py', 'data/calibration-files.json']) {
+    await fs.copyFile(path.resolve(__dirname, '..', file), path.join(tempRoot, file));
+  }
+  execFileSync(process.env.PYTHON || 'python', [path.join(tempRoot, 'scripts/sync-calibration-downloads.py')]);
+  const generated = await fs.readFile(path.join(tempRoot, 'index.html'), 'utf8');
+  assert.equal((generated.match(/href="https:\/\/oss\.fulai\.studio\/fulai_sensing_glove\/calibration\//g) || []).length, 74);
+  assert.ok(!generated.includes('href="downloads/calibration'));
+  assert.equal((await fs.readdir(tempRoot)).includes('downloads'), false);
 });

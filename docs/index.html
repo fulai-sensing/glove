@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="css/styles.css">
   <script defer src="js/zh.js"></script>
   <script defer src="js/i18n.js"></script>
+  <script defer src="js/vendor/jszip.min.js"></script>
   <script defer src="js/app.js"></script>
 </head>
 
@@ -1784,6 +1785,263 @@
             </table>
           </div>
           <h2 id="section-7-1">7.1 Importing Force Calibration</h2>
+          <!-- calibration-picker:calibration:start -->
+          <section class="calibration-downloads" aria-labelledby="calibration-download-title">
+            <div class="calibration-download-heading">
+              <span class="card-icon"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13H5zM14 3v6h5M8 13h8M8 17h6" /></svg></span>
+              <div class="calibration-heading-copy">
+                <h3 id="calibration-download-title">Download calibration files</h3>
+                <p>Select files that match your Glove ID and hand, then import each file into the software.</p>
+                <span class="calibration-version"><span data-no-translate>JSON · 37</span> <span>files</span></span>
+              </div>
+            </div>
+            <div class="calibration-toolbar">
+              <div class="calibration-search" hidden>
+                <label class="sr-only" for="calibration-search">Find calibration files</label>
+                <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
+                <input id="calibration-search" type="search" placeholder="Search Glove ID or filename..." autocomplete="off">
+              </div>
+              <div class="calibration-selection-bar" hidden>
+                <label><input id="calibration-select-all" data-calibration-select-all type="checkbox"><span>Select visible files</span></label>
+                <span id="calibration-selection-count" role="status" data-calibration-count data-no-translate></span>
+              </div>
+            </div>
+            <div class="calibration-file-list" role="region" aria-label="Available calibration files" tabindex="0">
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091402-Right.json" hidden>
+                  <span><strong data-no-translate>G-26091402-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.1 · 1.60 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091402-Right.json" target="_blank" rel="noopener" download="G-26091402-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091402-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091404-Left.json" hidden>
+                  <span><strong data-no-translate>G-26091404-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.1 · 1.65 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091404-Left.json" target="_blank" rel="noopener" download="G-26091404-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091404-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091508_Right.json" hidden>
+                  <span><strong data-no-translate>G-26091508_Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.1 · 1.50 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091508_Right.json" target="_blank" rel="noopener" download="G-26091508_Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091508_Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091509-Left.json" hidden>
+                  <span><strong data-no-translate>G-26091509-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.1 · 748 KB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091509-Left.json" target="_blank" rel="noopener" download="G-26091509-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091509-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26091801_Left.json" hidden>
+                  <span><strong data-no-translate>G_26091801_Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 1.62 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26091801_Left.json" target="_blank" rel="noopener" download="G_26091801_Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26091801_Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26091801_Right.json" hidden>
+                  <span><strong data-no-translate>G_26091801_Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 1.56 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26091801_Right.json" target="_blank" rel="noopener" download="G_26091801_Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26091801_Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26091802_Left.json" hidden>
+                  <span><strong data-no-translate>G_26091802_Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 1.90 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26091802_Left.json" target="_blank" rel="noopener" download="G_26091802_Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26091802_Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26091802_Right.json" hidden>
+                  <span><strong data-no-translate>G_26091802_Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 1.84 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26091802_Right.json" target="_blank" rel="noopener" download="G_26091802_Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26091802_Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091803-Left.json" hidden>
+                  <span><strong data-no-translate>G-26091803-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 3.17 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091803-Left.json" target="_blank" rel="noopener" download="G-26091803-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091803-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091803-Right.json" hidden>
+                  <span><strong data-no-translate>G-26091803-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 1.84 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091803-Right.json" target="_blank" rel="noopener" download="G-26091803-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091803-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091804-Left.json" hidden>
+                  <span><strong data-no-translate>G-26091804-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 3.48 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091804-Left.json" target="_blank" rel="noopener" download="G-26091804-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091804-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091804-Right.json" hidden>
+                  <span><strong data-no-translate>G-26091804-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 3.69 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091804-Right.json" target="_blank" rel="noopener" download="G-26091804-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091804-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26091806_Left.json" hidden>
+                  <span><strong data-no-translate>G_26091806_Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 2.45 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26091806_Left.json" target="_blank" rel="noopener" download="G_26091806_Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26091806_Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091806-Right.json" hidden>
+                  <span><strong data-no-translate>G-26091806-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 2.15 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091806-Right.json" target="_blank" rel="noopener" download="G-26091806-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091806-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091808-Left.json" hidden>
+                  <span><strong data-no-translate>G-26091808-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 2.67 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091808-Left.json" target="_blank" rel="noopener" download="G-26091808-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091808-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091808-Right.json" hidden>
+                  <span><strong data-no-translate>G-26091808-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 2.46 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091808-Right.json" target="_blank" rel="noopener" download="G-26091808-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091808-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091809-Left.json" hidden>
+                  <span><strong data-no-translate>G-26091809-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 2.29 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091809-Left.json" target="_blank" rel="noopener" download="G-26091809-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091809-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091809-Right.json" hidden>
+                  <span><strong data-no-translate>G-26091809-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 2.15 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091809-Right.json" target="_blank" rel="noopener" download="G-26091809-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091809-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091810-Left.json" hidden>
+                  <span><strong data-no-translate>G-26091810-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 1.92 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091810-Left.json" target="_blank" rel="noopener" download="G-26091810-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091810-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091810-Right.json" hidden>
+                  <span><strong data-no-translate>G-26091810-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 3.09 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091810-Right.json" target="_blank" rel="noopener" download="G-26091810-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091810-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26092001-Left.json" hidden>
+                  <span><strong data-no-translate>G_26092001-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 531 KB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26092001-Left.json" target="_blank" rel="noopener" download="G_26092001-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26092001-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26092001-Right.json" hidden>
+                  <span><strong data-no-translate>G_26092001-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 542 KB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26092001-Right.json" target="_blank" rel="noopener" download="G_26092001-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26092001-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26092201-Left.json" hidden>
+                  <span><strong data-no-translate>G-26092201-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 4.44 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26092201-Left.json" target="_blank" rel="noopener" download="G-26092201-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26092201-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26092201-Right.json" hidden>
+                  <span><strong data-no-translate>G-26092201-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 4.10 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26092201-Right.json" target="_blank" rel="noopener" download="G-26092201-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26092201-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26092205-Left.json" hidden>
+                  <span><strong data-no-translate>G-26092205-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 4.07 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26092205-Left.json" target="_blank" rel="noopener" download="G-26092205-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26092205-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26092205_Right.json" hidden>
+                  <span><strong data-no-translate>G_26092205_Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 2.60 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26092205_Right.json" target="_blank" rel="noopener" download="G_26092205_Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26092205_Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26101301-Right.json" hidden>
+                  <span><strong data-no-translate>G_26101301-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 667 KB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26101301-Right.json" target="_blank" rel="noopener" download="G_26101301-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26101301-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26102201-Left.json" hidden>
+                  <span><strong data-no-translate>G-26102201-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 4.07 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26102201-Left.json" target="_blank" rel="noopener" download="G-26102201-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26102201-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26102701_Left.json" hidden>
+                  <span><strong data-no-translate>G_26102701_Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 686 KB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26102701_Left.json" target="_blank" rel="noopener" download="G_26102701_Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26102701_Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26102701-Right.json" hidden>
+                  <span><strong data-no-translate>G-26102701-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 5.19 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26102701-Right.json" target="_blank" rel="noopener" download="G-26102701-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26102701-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26102804-Left.json" hidden>
+                  <span><strong data-no-translate>G-26102804-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 3.11 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26102804-Left.json" target="_blank" rel="noopener" download="G-26102804-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26102804-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26102804-Right.json" hidden>
+                  <span><strong data-no-translate>G-26102804-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 2.78 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26102804-Right.json" target="_blank" rel="noopener" download="G-26102804-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26102804-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26102805-Right.json" hidden>
+                  <span><strong data-no-translate>G-26102805-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 470 KB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26102805-Right.json" target="_blank" rel="noopener" download="G-26102805-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26102805-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26110301_Left.json" hidden>
+                  <span><strong data-no-translate>G_26110301_Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 775 KB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26110301_Left.json" target="_blank" rel="noopener" download="G_26110301_Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26110301_Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26110301_Right.json" hidden>
+                  <span><strong data-no-translate>G_26110301_Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 6.44 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26110301_Right.json" target="_blank" rel="noopener" download="G_26110301_Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26110301_Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26110302-Left.json" hidden>
+                  <span><strong data-no-translate>G_26110302-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 4.93 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26110302-Left.json" target="_blank" rel="noopener" download="G_26110302-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26110302-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26110302-Right.json" hidden>
+                  <span><strong data-no-translate>G_26110302-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 685 KB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26110302-Right.json" target="_blank" rel="noopener" download="G_26110302-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26110302-Right.json</span></a>
+              </div>
+            </div>
+            <p class="calibration-empty" hidden>No matching calibration files. Try another Glove ID.</p>
+            <div class="calibration-download-actions">
+              <button type="button" class="button primary" id="download-selected-calibration" data-calibration-download data-no-translate hidden disabled></button>
+              <a class="button secondary" data-calibration-bundle href="https://oss.fulai.studio/fulai_sensing_glove/calibration.zip" target="_blank" rel="noopener" download="FULAI_Glove_Calibration_Files.zip"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span>Download all (ZIP)</span></a>
+              <button type="button" class="calibration-clear" data-calibration-clear hidden>Clear selection</button>
+            </div>
+            <p class="calibration-download-hint" data-calibration-online-hint hidden>One file downloads as JSON; multiple files download together as a ZIP. Selections are shared between this chapter and Source documents.</p>
+            <p class="calibration-download-hint" data-calibration-offline-hint hidden>Downloads require an internet connection. Open the website to select multiple files, or open individual files and save them.</p>
+            <p class="calibration-download-hint calibration-download-status" role="status" data-calibration-status data-no-translate></p>
+            <a class="calibration-download-hint" data-calibration-direct target="_blank" rel="noopener" hidden>Open the original file to save it</a>
+          </section>
+          <!-- calibration-picker:calibration:end -->
           <p>Each glove ships with its own force calibration files, typically named &lt;Device Code&gt;_left.json and
             &lt;Device Code&gt;_right.json. Before importing, enter the matching Left Glove ID or Right Glove ID;
             otherwise the software asks you to enter the Glove ID first.</p>
@@ -3481,16 +3739,264 @@
                 width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" />
-              </svg></a><a class="download-card" href="downloads/calibration.zip"
-              data-zh-href="downloads/calibration.zip" download="FULAI_Glove_Calibration_Files.zip"><span class="card-icon"><svg
-                  class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
-                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" />
-                </svg></span><span><strong>FULAI Glove Calibration Files</strong><small>V3.2 · Left and right glove calibration</small><small>ZIP · Contains the complete calibration folder</small></span><svg class="icon" width="20" height="20"
-                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
-                stroke-linejoin="round" aria-hidden="true">
-                <path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" />
               </svg></a></div>
+          <!-- calibration-picker:source-calibration:start -->
+          <section class="calibration-downloads" aria-labelledby="source-calibration-download-title">
+            <div class="calibration-download-heading">
+              <span class="card-icon"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13H5zM14 3v6h5M8 13h8M8 17h6" /></svg></span>
+              <div class="calibration-heading-copy">
+                <h3 id="source-calibration-download-title">Download calibration files</h3>
+                <p>Select files that match your Glove ID and hand, then import each file into the software.</p>
+                <span class="calibration-version"><span data-no-translate>JSON · 37</span> <span>files</span></span>
+              </div>
+            </div>
+            <div class="calibration-toolbar">
+              <div class="calibration-search" hidden>
+                <label class="sr-only" for="source-calibration-search">Find calibration files</label>
+                <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
+                <input id="source-calibration-search" type="search" placeholder="Search Glove ID or filename..." autocomplete="off">
+              </div>
+              <div class="calibration-selection-bar" hidden>
+                <label><input id="source-calibration-select-all" data-calibration-select-all type="checkbox"><span>Select visible files</span></label>
+                <span id="source-calibration-selection-count" role="status" data-calibration-count data-no-translate></span>
+              </div>
+            </div>
+            <div class="calibration-file-list" role="region" aria-label="Available calibration files" tabindex="0">
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091402-Right.json" hidden>
+                  <span><strong data-no-translate>G-26091402-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.1 · 1.60 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091402-Right.json" target="_blank" rel="noopener" download="G-26091402-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091402-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091404-Left.json" hidden>
+                  <span><strong data-no-translate>G-26091404-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.1 · 1.65 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091404-Left.json" target="_blank" rel="noopener" download="G-26091404-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091404-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091508_Right.json" hidden>
+                  <span><strong data-no-translate>G-26091508_Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.1 · 1.50 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091508_Right.json" target="_blank" rel="noopener" download="G-26091508_Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091508_Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091509-Left.json" hidden>
+                  <span><strong data-no-translate>G-26091509-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.1 · 748 KB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091509-Left.json" target="_blank" rel="noopener" download="G-26091509-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091509-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26091801_Left.json" hidden>
+                  <span><strong data-no-translate>G_26091801_Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 1.62 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26091801_Left.json" target="_blank" rel="noopener" download="G_26091801_Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26091801_Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26091801_Right.json" hidden>
+                  <span><strong data-no-translate>G_26091801_Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 1.56 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26091801_Right.json" target="_blank" rel="noopener" download="G_26091801_Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26091801_Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26091802_Left.json" hidden>
+                  <span><strong data-no-translate>G_26091802_Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 1.90 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26091802_Left.json" target="_blank" rel="noopener" download="G_26091802_Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26091802_Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26091802_Right.json" hidden>
+                  <span><strong data-no-translate>G_26091802_Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 1.84 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26091802_Right.json" target="_blank" rel="noopener" download="G_26091802_Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26091802_Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091803-Left.json" hidden>
+                  <span><strong data-no-translate>G-26091803-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 3.17 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091803-Left.json" target="_blank" rel="noopener" download="G-26091803-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091803-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091803-Right.json" hidden>
+                  <span><strong data-no-translate>G-26091803-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 1.84 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091803-Right.json" target="_blank" rel="noopener" download="G-26091803-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091803-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091804-Left.json" hidden>
+                  <span><strong data-no-translate>G-26091804-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 3.48 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091804-Left.json" target="_blank" rel="noopener" download="G-26091804-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091804-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091804-Right.json" hidden>
+                  <span><strong data-no-translate>G-26091804-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 3.69 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091804-Right.json" target="_blank" rel="noopener" download="G-26091804-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091804-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26091806_Left.json" hidden>
+                  <span><strong data-no-translate>G_26091806_Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 2.45 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26091806_Left.json" target="_blank" rel="noopener" download="G_26091806_Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26091806_Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091806-Right.json" hidden>
+                  <span><strong data-no-translate>G-26091806-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 2.15 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091806-Right.json" target="_blank" rel="noopener" download="G-26091806-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091806-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091808-Left.json" hidden>
+                  <span><strong data-no-translate>G-26091808-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 2.67 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091808-Left.json" target="_blank" rel="noopener" download="G-26091808-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091808-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091808-Right.json" hidden>
+                  <span><strong data-no-translate>G-26091808-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 2.46 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091808-Right.json" target="_blank" rel="noopener" download="G-26091808-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091808-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091809-Left.json" hidden>
+                  <span><strong data-no-translate>G-26091809-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 2.29 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091809-Left.json" target="_blank" rel="noopener" download="G-26091809-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091809-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091809-Right.json" hidden>
+                  <span><strong data-no-translate>G-26091809-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 2.15 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091809-Right.json" target="_blank" rel="noopener" download="G-26091809-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091809-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091810-Left.json" hidden>
+                  <span><strong data-no-translate>G-26091810-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 1.92 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091810-Left.json" target="_blank" rel="noopener" download="G-26091810-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091810-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26091810-Right.json" hidden>
+                  <span><strong data-no-translate>G-26091810-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 3.09 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26091810-Right.json" target="_blank" rel="noopener" download="G-26091810-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26091810-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26092001-Left.json" hidden>
+                  <span><strong data-no-translate>G_26092001-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 531 KB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26092001-Left.json" target="_blank" rel="noopener" download="G_26092001-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26092001-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26092001-Right.json" hidden>
+                  <span><strong data-no-translate>G_26092001-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 542 KB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26092001-Right.json" target="_blank" rel="noopener" download="G_26092001-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26092001-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26092201-Left.json" hidden>
+                  <span><strong data-no-translate>G-26092201-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 4.44 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26092201-Left.json" target="_blank" rel="noopener" download="G-26092201-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26092201-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26092201-Right.json" hidden>
+                  <span><strong data-no-translate>G-26092201-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 4.10 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26092201-Right.json" target="_blank" rel="noopener" download="G-26092201-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26092201-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26092205-Left.json" hidden>
+                  <span><strong data-no-translate>G-26092205-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 4.07 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26092205-Left.json" target="_blank" rel="noopener" download="G-26092205-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26092205-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26092205_Right.json" hidden>
+                  <span><strong data-no-translate>G_26092205_Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 2.60 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26092205_Right.json" target="_blank" rel="noopener" download="G_26092205_Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26092205_Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26101301-Right.json" hidden>
+                  <span><strong data-no-translate>G_26101301-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 667 KB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26101301-Right.json" target="_blank" rel="noopener" download="G_26101301-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26101301-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26102201-Left.json" hidden>
+                  <span><strong data-no-translate>G-26102201-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 4.07 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26102201-Left.json" target="_blank" rel="noopener" download="G-26102201-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26102201-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26102701_Left.json" hidden>
+                  <span><strong data-no-translate>G_26102701_Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 686 KB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26102701_Left.json" target="_blank" rel="noopener" download="G_26102701_Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26102701_Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26102701-Right.json" hidden>
+                  <span><strong data-no-translate>G-26102701-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 5.19 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26102701-Right.json" target="_blank" rel="noopener" download="G-26102701-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26102701-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26102804-Left.json" hidden>
+                  <span><strong data-no-translate>G-26102804-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 3.11 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26102804-Left.json" target="_blank" rel="noopener" download="G-26102804-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26102804-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26102804-Right.json" hidden>
+                  <span><strong data-no-translate>G-26102804-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 2.78 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26102804-Right.json" target="_blank" rel="noopener" download="G-26102804-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26102804-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G-26102805-Right.json" hidden>
+                  <span><strong data-no-translate>G-26102805-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 470 KB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G-26102805-Right.json" target="_blank" rel="noopener" download="G-26102805-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G-26102805-Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26110301_Left.json" hidden>
+                  <span><strong data-no-translate>G_26110301_Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 775 KB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26110301_Left.json" target="_blank" rel="noopener" download="G_26110301_Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26110301_Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26110301_Right.json" hidden>
+                  <span><strong data-no-translate>G_26110301_Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 6.44 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26110301_Right.json" target="_blank" rel="noopener" download="G_26110301_Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26110301_Right.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26110302-Left.json" hidden>
+                  <span><strong data-no-translate>G_26110302-Left.json</strong><small><span>Left hand</span> · <span data-no-translate>V3.2 · 4.93 MB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26110302-Left.json" target="_blank" rel="noopener" download="G_26110302-Left.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26110302-Left.json</span></a>
+              </div>
+              <div class="calibration-file">
+                <label><input type="checkbox" data-calibration-file="G_26110302-Right.json" hidden>
+                  <span><strong data-no-translate>G_26110302-Right.json</strong><small><span>Right hand</span> · <span data-no-translate>V3.2 · 685 KB</span></small></span>
+                </label>
+                <a href="https://oss.fulai.studio/fulai_sensing_glove/calibration/G_26110302-Right.json" target="_blank" rel="noopener" download="G_26110302-Right.json"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span class="sr-only">Download</span><span class="sr-only" data-no-translate> G_26110302-Right.json</span></a>
+              </div>
+            </div>
+            <p class="calibration-empty" hidden>No matching calibration files. Try another Glove ID.</p>
+            <div class="calibration-download-actions">
+              <button type="button" class="button primary" id="download-selected-source-calibration" data-calibration-download data-no-translate hidden disabled></button>
+              <a class="button secondary" data-calibration-bundle href="https://oss.fulai.studio/fulai_sensing_glove/calibration.zip" target="_blank" rel="noopener" download="FULAI_Glove_Calibration_Files.zip"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span>Download all (ZIP)</span></a>
+              <button type="button" class="calibration-clear" data-calibration-clear hidden>Clear selection</button>
+            </div>
+            <p class="calibration-download-hint" data-calibration-online-hint hidden>One file downloads as JSON; multiple files download together as a ZIP. Selections are shared between this chapter and Source documents.</p>
+            <p class="calibration-download-hint" data-calibration-offline-hint hidden>Downloads require an internet connection. Open the website to select multiple files, or open individual files and save them.</p>
+            <p class="calibration-download-hint calibration-download-status" role="status" data-calibration-status data-no-translate></p>
+            <a class="calibration-download-hint" data-calibration-direct target="_blank" rel="noopener" hidden>Open the original file to save it</a>
+          </section>
+          <!-- calibration-picker:source-calibration:end -->
           <h2 id="source-scope">How to use this combined guide</h2>
           <p>The product overviews retain the Apex Sensing name; the detailed software manual retains the FULAI name.
             Source dates and versions are shown on each page. Model-specific performance figures are kept separate from
@@ -3525,7 +4031,7 @@
           </aside>
           <h2 id="source-offline">Using this documentation offline</h2>
           <p>Open <code>index.html</code> in a browser. Keep the <code>css</code>, <code>js</code>, <code>img</code>,
-            and <code>downloads</code> folders alongside it. No account, internet connection, or build step is required.
+            and <code>downloads</code> folders alongside it. Reading the guide requires no account or build step. Calibration and software downloads require an internet connection.
           </p>
           <p>Search with <kbd>Ctrl</kbd> + <kbd>K</kbd> (or <kbd>⌘</kbd> + <kbd>K</kbd>). Select any figure to enlarge
             it. The Print button prints the current chapter by default, with an option to print the complete guide.

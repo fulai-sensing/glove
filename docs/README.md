@@ -1,6 +1,6 @@
 # FULAI Tactile Glove Documentation
 
-Open `index.html` directly in a browser, or publish this entire directory on any static web server. No package installation or build step is needed. Every stylesheet, script, image, and document uses a relative path, including when the site is hosted in a subdirectory.
+Open `index.html` directly in a browser, or publish this directory on any static web server. No package installation or build step is needed. Stylesheets, scripts, images, and Word documents use relative paths. Calibration JSON files and the complete calibration ZIP download from `https://oss.fulai.studio/fulai_sensing_glove/` and require an internet connection.
 
 ## Files
 
@@ -10,8 +10,15 @@ Open `index.html` directly in a browser, or publish this entire directory on any
 - `js/i18n.js` — browser-language detection, manual language selection, and local preference storage.
 - `js/zh.js` — Chinese translations for the English HTML and interactive messages.
 - `img/` — deduplicated, losslessly converted source illustrations and a local favicon.
-- `downloads/` — source Word documents, Chinese product overviews, the Chinese V1.1.6 manual, and the glove calibration bundle.
-- `downloads/calibration/` — the glove-specific V3.2 JSON calibration files available for download.
+- `downloads/` — source Word documents, Chinese product overviews, and the Chinese V1.1.6 manual. Keep these documents for the existing download links.
+- `data/calibration-files.json` — small calibration catalog: OSS base URL, full ZIP URL, original filenames, versions, hand labels, and sizes. Keep this file for future catalog updates.
+- `downloads/calibration/` and `downloads/calibration.zip` — legacy local copies retained as backups; the website and default generator no longer use them. They are optional and can be excluded from deployment.
+
+Chapter 7.1 and Source documents both include a calibration picker with filename / Glove ID search, select visible results, clear selection, individual JSON links, and the complete ZIP bundle. The two pickers share selections while navigating or changing language. On HTTP(S), individual links and a single selection fetch the original JSON from OSS and save a Blob with its original filename (cross-origin links cannot rely on the HTML download attribute). Multiple selected files are fetched from OSS and compressed into one ZIP with the locally bundled JSZip 3.10.1 (`js/vendor/`, MIT license included). Selecting every file uses the OSS ZIP directly. No file content is uploaded, and no request falls back to local calibration files. On `file://`, the online OSS links remain available but multi-select controls are hidden. A failed single-file fetch offers a direct OSS link to open and save the original file.
+
+Run `python docs/scripts/sync-calibration-downloads.py` to regenerate both static pickers from the catalog without reading local calibration files or generating a ZIP. To refresh metadata from a complete directory of original JSON files, use `python docs/scripts/sync-calibration-downloads.py --source "C:/path/to/calibration"`. To also prepare a full ZIP for OSS upload, add `--zip-output "C:/path/to/calibration.zip"`. The script reads version/hand labels from the JSON metadata, preserves file bytes when packaging, and does not upload files. Upload the individual JSON files and refreshed ZIP to OSS separately. Uploading new objects alone does not change the website's catalog.
+
+OSS must permit reads for these objects. Configure CORS to allow GET from each actual documentation origin (scheme + hostname + optional port; no page path), and HEAD if used for verification. Browsers cannot read JSON for single-file saves or selected ZIP creation without CORS even when direct links download successfully. Direct ZIP downloads work independently of CORS. Optional `Content-Disposition: attachment` on OSS objects also makes direct/no-JavaScript links download. The app does not require credentials or upload permissions.
 
 The full document remains readable without JavaScript. When JavaScript is enabled, navigation displays one chapter at a time. Chapter and figure links use URL fragments and support browser Back and Forward. Search runs entirely in the browser and does not upload content. Checklist state is saved locally when browser storage is available.
 

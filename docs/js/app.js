@@ -1,4 +1,4 @@
-/* Native, offline documentation: deliberately no fetch, modules or dependencies. */
+/* Offline documentation; calibration downloads use OSS and locally bundled JSZip. */
 (() => {
   'use strict';
   const t = window.FulaiI18n.t;
@@ -306,6 +306,153 @@
   $('#reset-checklist').addEventListener('click', () => { checkboxes.forEach(checkbox => { checkbox.checked = false; }); updateChecklist(); notify(t('Checklist reset for a new session')); });
   updateChecklist(false);
 
+  const calibrationPickers = $$('.calibration-downloads');
+  const selectedCalibration = new Set();
+  const calibrationCatalog = new Map($$('.calibration-file', calibrationPickers[0]).map(row => {
+    const link = $('a[download]', row);
+    return [link.download, link.getAttribute('href')];
+  }));
+  const calibrationBundle = $('[data-calibration-bundle]', calibrationPickers[0]).href;
+  let downloadingCalibration = false;
+  let calibrationStatus = '';
+  let calibrationStatusValues = {};
+  let calibrationDirectUrl = '';
+  const canBatchDownload = location.protocol === 'http:' || location.protocol === 'https:';
+  const normalizeCalibration = value => normalize(value).replace(/[-_\s]/g, '');
+  function updateCalibrationSelection() {
+    calibrationPickers.forEach(picker => {
+      const query = normalizeCalibration($('input[type="search"]', picker).value);
+      const rows = $$('.calibration-file', picker);
+      rows.forEach(row => {
+        const input = $('[data-calibration-file]', row);
+        row.hidden = !normalizeCalibration(input.dataset.calibrationFile).includes(query);
+        input.checked = selectedCalibration.has(input.dataset.calibrationFile);
+        input.disabled = downloadingCalibration;
+      });
+      const visible = rows.filter(row => !row.hidden).map(row => $('[data-calibration-file]', row));
+      const visibleCount = visible.filter(input => input.checked).length;
+      const selectAll = $('[data-calibration-select-all]', picker);
+      selectAll.checked = visible.length > 0 && visibleCount === visible.length;
+      selectAll.indeterminate = visibleCount > 0 && visibleCount < visible.length;
+      selectAll.disabled = downloadingCalibration || !visible.length;
+      $('[data-calibration-count]', picker).textContent = t('{count} selected · {visible} / {total} shown', {
+        count: selectedCalibration.size, visible: visible.length, total: calibrationCatalog.size
+      });
+      $('.calibration-empty', picker).hidden = visible.length > 0;
+      const button = $('[data-calibration-download]', picker);
+      button.disabled = selectedCalibration.size === 0 || downloadingCalibration;
+      button.textContent = downloadingCalibration ? t('Preparing download…') : t('Download selected ({count})', { count: selectedCalibration.size });
+      $('[data-calibration-clear]', picker).disabled = !selectedCalibration.size || downloadingCalibration;
+      $('[data-calibration-status]', picker).textContent = calibrationStatus ? t(calibrationStatus, calibrationStatusValues) : '';
+      const directLink = $('[data-calibration-direct]', picker);
+      directLink.hidden = !calibrationDirectUrl;
+      if (calibrationDirectUrl) directLink.href = calibrationDirectUrl;
+      else directLink.removeAttribute('href');
+    });
+  }
+  function setCalibrationStatus(message, values = {}) {
+    calibrationStatus = message;
+    calibrationStatusValues = values;
+    updateCalibrationSelection();
+  }
+  function saveCalibration(url, name) {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = name;
+    if (new URL(url, location.href).origin !== location.origin && !url.startsWith('blob:')) {
+      link.target = '_blank';
+      link.rel = 'noopener';
+    }
+    document.body.append(link);
+    link.click();
+    link.remove();
+  }
+  function saveCalibrationBlob(blob, name) {
+    const url = URL.createObjectURL(blob);
+    saveCalibration(url, name);
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+  async function readCalibration(name) {
+    const response = await fetch(calibrationCatalog.get(name), {
+      mode: 'cors', credentials: 'omit', signal: AbortSignal.timeout(60000)
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}: ${name}`);
+    const bytes = await response.arrayBuffer();
+    JSON.parse(new TextDecoder().decode(bytes).replace(/^\uFEFF/, ''));
+    return bytes;
+  }
+  async function downloadCalibration(names = [...selectedCalibration]) {
+    if (downloadingCalibration || !names.length || !canBatchDownload) return;
+    downloadingCalibration = true;
+    calibrationDirectUrl = '';
+    setCalibrationStatus('Preparing {count} files…', { count: names.length });
+    try {
+      if (names.length === 1) {
+        const bytes = await readCalibration(names[0]);
+        saveCalibrationBlob(new Blob([bytes], { type: 'application/json' }), names[0]);
+      } else if (names.length === calibrationCatalog.size) {
+        saveCalibration(calibrationBundle, 'FULAI_Glove_Calibration_Files.zip');
+      } else {
+        const zip = new window.JSZip();
+        // Limit memory/network pressure and fail the entire selection on any missing file.
+        for (const [index, name] of names.entries()) {
+          const bytes = await readCalibration(name);
+          zip.file('calibration/' + name, bytes);
+          setCalibrationStatus('Preparing files: {count} / {total}', { count: index + 1, total: names.length });
+        }
+        const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } }, metadata => {
+          setCalibrationStatus('Creating ZIP: {percent}%', { percent: Math.round(metadata.percent) });
+        });
+        saveCalibrationBlob(blob, 'FULAI_Glove_Calibration_Selected.zip');
+      }
+      setCalibrationStatus('Download requests sent. Check your browser’s downloads.');
+    } catch {
+      if (names.length === 1) calibrationDirectUrl = calibrationCatalog.get(names[0]);
+      setCalibrationStatus('Could not prepare the selected files. Check your connection, retry, or use Download all (ZIP).');
+    } finally {
+      downloadingCalibration = false;
+      updateCalibrationSelection();
+    }
+  }
+  calibrationPickers.forEach(picker => {
+    $('.calibration-search', picker).hidden = false;
+    $('.calibration-selection-bar', picker).hidden = !canBatchDownload;
+    $('[data-calibration-download]', picker).hidden = !canBatchDownload;
+    $('[data-calibration-clear]', picker).hidden = !canBatchDownload;
+    $('[data-calibration-online-hint]', picker).hidden = !canBatchDownload;
+    $('[data-calibration-offline-hint]', picker).hidden = canBatchDownload;
+    $('input[type="search"]', picker).addEventListener('input', updateCalibrationSelection);
+    $$('[data-calibration-file]', picker).forEach(input => {
+      input.hidden = !canBatchDownload;
+      input.addEventListener('change', () => {
+        calibrationDirectUrl = '';
+        if (input.checked) selectedCalibration.add(input.dataset.calibrationFile);
+        else selectedCalibration.delete(input.dataset.calibrationFile);
+        setCalibrationStatus('');
+      });
+    });
+    $('[data-calibration-select-all]', picker).addEventListener('change', event => {
+      calibrationDirectUrl = '';
+      $$('.calibration-file:not([hidden]) [data-calibration-file]', picker).forEach(input => {
+        if (event.target.checked) selectedCalibration.add(input.dataset.calibrationFile);
+        else selectedCalibration.delete(input.dataset.calibrationFile);
+      });
+      setCalibrationStatus('');
+    });
+    $('[data-calibration-clear]', picker).addEventListener('click', () => {
+      calibrationDirectUrl = '';
+      selectedCalibration.clear();
+      setCalibrationStatus('');
+    });
+    $('[data-calibration-download]', picker).addEventListener('click', () => downloadCalibration());
+    $$('.calibration-file a[download]', picker).forEach(link => link.addEventListener('click', event => {
+      if (!canBatchDownload || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      downloadCalibration([link.download]);
+    }));
+  });
+  updateCalibrationSelection();
+
   let closedDetails = [];
   function preparePrint() {
     const scope = document.body.classList.contains('print-all') ? document : activePage;
@@ -339,6 +486,7 @@
     renderNeighbors(activePage);
     rebuildSearchIndex();
     updateChecklist(false);
+    updateCalibrationSelection();
     setNavigation(document.body.classList.contains('nav-open'));
     if (searchDialog.open) renderSearch();
     const figureId = $('#enlarged-image').dataset.figure;
