@@ -45,6 +45,9 @@
 .calibration-download-status:empty{display:none}
 .calibration-downloads .calibration-download-status{color:var(--body)}
 .calibration-downloads [data-calibration-direct]{display:block;color:var(--blue)}
+.calibration-catalog-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 22px 12px;font-size:11px;color:var(--muted)}
+.calibration-catalog-toolbar button{flex-shrink:0}
+@media(max-width:540px){.calibration-catalog-toolbar{margin:0 17px 12px;font-size:10px}}
 @media(max-width:540px){
  .calibration-download-heading{padding:17px;gap:12px}
  .calibration-download-heading>.card-icon{display:none}

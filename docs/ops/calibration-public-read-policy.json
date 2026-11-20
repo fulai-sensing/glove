@@ -1,0 +1,22 @@
+{
+  "Version": "1",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": ["*"],
+      "Action": ["oss:ListObjects"],
+      "Resource": ["acs:oss:*:*:fulai-sensing"],
+      "Condition": {
+        "StringEquals": {
+          "oss:Prefix": "fulai_sensing_glove/calibration/"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Principal": ["*"],
+      "Action": ["oss:GetObject"],
+      "Resource": ["acs:oss:*:*:fulai-sensing/fulai_sensing_glove/calibration/*"]
+    }
+  ]
+}

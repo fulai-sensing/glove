@@ -6,12 +6,19 @@ const { pathToFileURL } = require('node:url');
 const path = require('node:path');
 const url = pathToFileURL(path.resolve(__dirname, '../index.html')).href;
 const storageKey = 'fulai-documentation-language';
-const calibrationManifest = require('../data/calibration-files.json');
+const calibrationManifest = require('./fixtures/calibration-files.json');
 // Small independent fixtures: these tests do not need the legacy local originals.
 const calibrationFixtures = new Map(calibrationManifest.files.map(file => [file.name,
   Buffer.from(JSON.stringify({ glove_version: file.version, hand: file.hand, fixture: file.name, values: [1, 2, 3] }))
 ]));
 let calibrationZipFixture;
+const xmlEscape = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&apos;'}[char]));
+function listingXml(files, token = '') {
+  return `<ListBucketResult><EncodingType>url</EncodingType>${files.map(file => `<Contents><Key>${xmlEscape(encodeURIComponent('fulai_sensing_glove/calibration/' + file.name))}</Key><Size>${file.size || 1}</Size><ETag>${xmlEscape(file.etag || 'original')}</ETag><LastModified>2026-11-20T00:00:00Z</LastModified></Contents>`).join('')}<IsTruncated>${Boolean(token)}</IsTruncated>${token ? `<NextContinuationToken>${xmlEscape(encodeURIComponent(token))}</NextContinuationToken>` : ''}</ListBucketResult>`;
+}
+async function waitForCatalog(page) {
+  await page.waitForFunction(() => document.querySelector('#sources [data-calibration-bundle]').disabled === false);
+}
 let browser;
 let server;
 let hostedUrl;
@@ -55,6 +62,10 @@ async function open(t, locale, setup) {
     const bytes = requested.startsWith(calibrationManifest.baseUrl) && calibrationFixtures.get(name);
     await route.fulfill({ status: bytes ? 200 : 404, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: bytes || 'missing' });
   });
+  await context.route('https://oss.fulai.studio/?**', route => route.fulfill({
+    status: 200, contentType: 'application/xml', headers: { 'Access-Control-Allow-Origin': '*' },
+    body: listingXml([...calibrationFixtures].map(([name, bytes]) => ({ name, size: bytes.length })))
+  }));
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -202,6 +213,7 @@ test('Calibration selection survives language changes and downloads only selecte
   const fs = require('node:fs/promises');
   const page = await open(t, 'zh-CN');
   await page.goto(hostedUrl + '#section-7-1');
+  await waitForCatalog(page);
   const files = page.locator('#calibration [data-calibration-file]');
   const downloadButton = page.locator('#download-selected-calibration');
   const selectAll = page.locator('#calibration-select-all');
@@ -237,6 +249,7 @@ test('Calibration selection survives language changes and downloads only selecte
 test('Calibration download card fits mobile screens in both languages', async t => {
   const page = await open(t, 'zh-CN');
   await page.goto(hostedUrl + '#section-7-1');
+  await waitForCatalog(page);
   for (const width of [320, 375, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     for (const mode of ['en', 'zh']) {
@@ -250,24 +263,19 @@ test('Calibration download card fits mobile screens in both languages', async t 
   }
 });
 
-test('Local HTML points to the OSS ZIP and explains the required internet connection', async t => {
+test('Local HTML explains that the live catalog requires the website', async t => {
   const page = await open(t, 'zh-CN');
   await page.goto(url + '#section-7-1');
   assert.equal(await page.locator('#download-selected-calibration').isVisible(), false);
-  assert.equal(await page.locator('#calibration [data-calibration-offline-hint]').isVisible(), true);
-  assert.equal(await page.locator('#calibration [data-calibration-bundle]').getAttribute('href'), calibrationManifest.bundleUrl);
-  const downloadEvent = page.waitForEvent('download');
-  await page.locator('#calibration .calibration-download-actions a').click();
-  const download = await downloadEvent;
-  assert.equal(await download.failure(), null);
-  assert.match(download.suggestedFilename(), /\.zip$/);
-  assert.equal(new URL(page.url()).hash, '#section-7-1');
+  assert.match(await page.locator('#calibration [data-calibration-offline-hint]').textContent(), /网页版/);
+  assert.equal(await page.locator('#calibration [data-calibration-bundle]').isVisible(), false);
 });
 
 test('Source documents supports search, shared selection, single JSON and selected ZIP downloads', async t => {
   const fs = require('node:fs/promises');
   const page = await open(t, 'zh-CN');
   await page.goto(hostedUrl + '#source-calibration-download-title');
+  await waitForCatalog(page);
   const picker = page.locator('#sources .calibration-downloads');
   assert.equal(await picker.locator('[data-calibration-file]').count(), 37);
   const search = picker.locator('input[type="search"]');
@@ -309,13 +317,15 @@ test('Source documents supports search, shared selection, single JSON and select
   const allEvent = page.waitForEvent('download');
   await picker.locator('[data-calibration-download]').click();
   const all = await allEvent;
-  assert.equal(all.suggestedFilename(), 'calibration.zip');
-  assert.deepEqual(await fs.readFile(await all.path()), calibrationZipFixture);
+  assert.equal(all.suggestedFilename(), 'FULAI_Glove_Calibration_Selected.zip');
+  const allZip = await require('jszip').loadAsync(await fs.readFile(await all.path()));
+  assert.equal(Object.keys(allZip.files).filter(name => name.endsWith('.json')).length, 37);
 });
 
 test('Failed selected downloads preserve selection and allow retry without a partial ZIP', async t => {
   const page = await open(t, 'zh-CN');
   await page.goto(hostedUrl + '#source-calibration-download-title');
+  await waitForCatalog(page);
   const picker = page.locator('#sources .calibration-downloads');
   await picker.locator('[data-calibration-file]').nth(0).check();
   await picker.locator('[data-calibration-file]').nth(1).check();
@@ -338,6 +348,7 @@ test('Individual row downloads save the OSS JSON with its original filename', as
   const fs = require('node:fs/promises');
   const page = await open(t, 'zh-CN');
   await page.goto(hostedUrl + '#source-calibration-download-title');
+  await waitForCatalog(page);
   const link = page.locator('#sources .calibration-file a').first();
   const name = await link.getAttribute('download');
   assert.equal(await link.getAttribute('href'), calibrationManifest.baseUrl + name);
@@ -349,9 +360,10 @@ test('Individual row downloads save the OSS JSON with its original filename', as
   assert.equal(new URL(page.url()).hash, '#source-calibration-download-title');
 });
 
-test('Blocked OSS reads show a direct save link and keep the full ZIP accessible', async t => {
+test('Blocked OSS reads show a direct save link and allow retry', async t => {
   const page = await open(t, 'zh-CN');
   await page.goto(hostedUrl + '#source-calibration-download-title');
+  await waitForCatalog(page);
   const picker = page.locator('#sources .calibration-downloads');
   const link = picker.locator('.calibration-file a').first();
   const source = await link.getAttribute('href');
@@ -361,9 +373,128 @@ test('Blocked OSS reads show a direct save link and keep the full ZIP accessible
   const direct = picker.locator('[data-calibration-direct]');
   assert.equal(await direct.isVisible(), true);
   assert.equal(await direct.getAttribute('href'), source);
+  await page.unroute(source);
+  const event = page.waitForEvent('download');
+  await link.click();
+  assert.equal(await (await event).failure(), null);
+});
+
+test('OSS uploads, replacements and deletions update both pickers and the complete ZIP', async t => {
+  const page = await open(t, 'zh-CN');
+  let files = [{ name: 'new_Left.json', etag: 'v1' }, { name: 'removed_Right.json' }, { name: 'unchanged_Left.json' }];
+  await page.route('https://oss.fulai.studio/?**', route => route.fulfill({ contentType: 'application/xml', body: listingXml(files) }));
+  const bytes = Buffer.from('{"newUpload":true,"values":[4,5,6]}');
+  const objectRequests = [];
+  await page.route('https://oss.fulai.studio/fulai_sensing_glove/**', route => {
+    objectRequests.push(route.request().url());
+    return route.fulfill({ contentType: 'application/json', body: bytes });
+  });
+  await page.goto(hostedUrl + '#source-calibration-download-title');
+  await waitForCatalog(page);
+  const picker = page.locator('#sources .calibration-downloads');
+  await picker.locator('[data-calibration-select-all]').check();
+  files = [{ name: 'new_Left.json', etag: 'v2' }, { name: 'unchanged_Left.json' }, { name: '批次 2/new_Right.json' }];
+  await picker.locator('[data-calibration-refresh]').click();
+  await waitForCatalog(page);
+  for (const section of ['#sources', '#calibration']) {
+    assert.deepEqual((await page.locator(section + ' [data-calibration-file]').evaluateAll(nodes => nodes.map(node => node.dataset.calibrationFile))).sort(), files.map(file => file.name).sort());
+    assert.deepEqual(await page.locator(section + ' [data-calibration-file]:checked').evaluateAll(nodes => nodes.map(node => node.dataset.calibrationFile)), ['unchanged_Left.json']);
+  }
   const event = page.waitForEvent('download');
   await picker.locator('[data-calibration-bundle]').click();
-  assert.equal(await (await event).failure(), null);
+  const download = await event;
+  assert.equal(download.suggestedFilename(), 'FULAI_Glove_Calibration_Files.zip');
+  const zip = await require('jszip').loadAsync(await require('node:fs/promises').readFile(await download.path()));
+  assert.deepEqual(Object.values(zip.files).filter(file => !file.dir).map(file => file.name).sort(), files.map(file => 'calibration/' + file.name).sort());
+  for (const file of files) assert.deepEqual(await zip.file('calibration/' + file.name).async('nodebuffer'), bytes);
+  assert.equal(objectRequests.length, 3);
+  assert.ok(objectRequests.every(request => !request.endsWith('.zip')), 'Never requests the historical ZIP');
+});
+
+test('OSS pagination decodes tokens and paths and excludes unrelated or unsafe objects', async t => {
+  const page = await open(t, 'en-US');
+  const token = 'page+2/% value';
+  const requests = [];
+  await page.route('https://oss.fulai.studio/?**', route => {
+    const request = new URL(route.request().url());
+    requests.push(request);
+    const body = request.searchParams.has('continuation-token')
+      ? listingXml([{ name: '子目录/a & b+%.json' }, { name: 'a_Left.json' }])
+      : listingXml([{ name: 'a_Left.json' }, { name: '../unsafe.json' }, { name: 'a\\unsafe.json' }, { name: 'readme.txt' }, { name: 'outside.json' }], token).replace(encodeURIComponent('fulai_sensing_glove/calibration/outside.json'), encodeURIComponent('private/outside.json'));
+    return route.fulfill({ contentType: 'application/xml', body });
+  });
+  await page.goto(hostedUrl + '#source-calibration-download-title');
+  await waitForCatalog(page);
+  assert.equal(requests.length, 2);
+  assert.equal(requests[1].searchParams.get('continuation-token'), token);
+  assert.ok(requests.every(request => request.searchParams.get('prefix') === 'fulai_sensing_glove/calibration/'));
+  assert.deepEqual(await page.locator('#sources [data-calibration-file]').evaluateAll(nodes => nodes.map(node => node.dataset.calibrationFile)), ['a_Left.json', '子目录/a & b+%.json']);
+  const link = page.locator('#sources .calibration-file a').last();
+  assert.equal(decodeURIComponent(new URL(await link.getAttribute('href')).pathname), '/fulai_sensing_glove/calibration/子目录/a & b+%.json');
+});
+
+test('Denied or interrupted listings stay unusable until a complete refresh succeeds', async t => {
+  const page = await open(t, 'en-US');
+  let mode = 'denied';
+  await page.route('https://oss.fulai.studio/?**', route => {
+    const second = new URL(route.request().url()).searchParams.has('continuation-token');
+    if (mode === 'denied' || (mode === 'partial' && second)) return route.fulfill({ status: 403, body: 'AccessDenied' });
+    return route.fulfill({ contentType: 'application/xml', body: listingXml([{ name: mode === 'partial' ? 'incomplete.json' : 'complete.json' }], mode === 'partial' ? 'next' : '') });
+  });
+  await page.goto(hostedUrl + '#source-calibration-download-title');
+  const picker = page.locator('#sources .calibration-downloads');
+  await page.waitForFunction(() => document.querySelector('#sources [data-calibration-catalog-status]').textContent.includes('Could not load'));
+  assert.equal(await picker.locator('[data-calibration-bundle]').isDisabled(), true);
+  assert.equal(await picker.locator('[data-calibration-file]').count(), 0);
+  mode = 'complete';
+  await picker.locator('[data-calibration-refresh]').click();
+  await waitForCatalog(page);
+  await picker.locator('[data-calibration-file]').check();
+  mode = 'partial';
+  await picker.locator('[data-calibration-refresh]').click();
+  await page.waitForFunction(() => document.querySelector('#sources [data-calibration-catalog-status]').textContent.includes('previous list'));
+  assert.equal(await picker.locator('[data-calibration-file]').getAttribute('data-calibration-file'), 'complete.json');
+  assert.equal(await picker.locator('[data-calibration-download]').isDisabled(), true);
+  assert.equal(await picker.locator('[data-calibration-bundle]').isDisabled(), true);
+  mode = 'complete';
+  await picker.locator('[data-calibration-refresh]').click();
+  await waitForCatalog(page);
+  assert.equal(await picker.locator('[data-calibration-file]').isChecked(), true);
+});
+
+test('An empty OSS directory has a clear empty state and no download actions', async t => {
+  const page = await open(t, 'en-US');
+  await page.route('https://oss.fulai.studio/?**', route => route.fulfill({ contentType: 'application/xml', body: listingXml([]) }));
+  await page.goto(hostedUrl + '#source-calibration-download-title');
+  await page.waitForFunction(() => document.querySelector('#sources [data-calibration-catalog-status]').textContent.includes('No calibration files'));
+  assert.equal(await page.locator('#sources [data-calibration-bundle]').isDisabled(), true);
+  assert.equal(await page.locator('#sources [data-calibration-select-all]').isDisabled(), true);
+});
+
+test('Repeated pagination tokens fail without publishing a partial catalog', async t => {
+  const page = await open(t, 'en-US');
+  let calls = 0;
+  await page.route('https://oss.fulai.studio/?**', route => {
+    calls++;
+    return route.fulfill({ contentType: 'application/xml', body: listingXml([{ name: 'partial.json' }], 'repeated') });
+  });
+  await page.goto(hostedUrl + '#source-calibration-download-title');
+  await page.waitForFunction(() => document.querySelector('#sources [data-calibration-catalog-status]').textContent.includes('Could not load'));
+  assert.equal(calls, 2);
+  assert.equal(await page.locator('[data-calibration-file]').count(), 0);
+});
+
+test('Visible download pages refresh automatically after sixty seconds', async t => {
+  const page = await open(t, 'en-US');
+  await page.clock.install();
+  let files = [{ name: 'first.json' }];
+  await page.route('https://oss.fulai.studio/?**', route => route.fulfill({ contentType: 'application/xml', body: listingXml(files) }));
+  await page.goto(hostedUrl + '#source-calibration-download-title');
+  await waitForCatalog(page);
+  files.push({ name: 'uploaded-later.json' });
+  await page.clock.fastForward(60000);
+  await page.waitForFunction(() => document.querySelectorAll('#sources [data-calibration-file]').length === 2);
+  assert.equal(await page.locator('#calibration [data-calibration-file]').count(), 2);
 });
 
 test('The generator works without local calibration originals or a local ZIP', async t => {
@@ -383,7 +514,8 @@ test('The generator works without local calibration originals or a local ZIP', a
   }
   execFileSync(process.env.PYTHON || 'python', [path.join(tempRoot, 'scripts/sync-calibration-downloads.py')]);
   const generated = await fs.readFile(path.join(tempRoot, 'index.html'), 'utf8');
-  assert.equal((generated.match(/href="https:\/\/oss\.fulai\.studio\/fulai_sensing_glove\/calibration\//g) || []).length, 74);
+  assert.equal((generated.match(/data-oss-prefix="fulai_sensing_glove\/calibration\/"/g) || []).length, 2);
+  assert.ok(!generated.includes('G-26102804-Left.json'));
   assert.ok(!generated.includes('href="downloads/calibration'));
   assert.equal((await fs.readdir(tempRoot)).includes('downloads'), false);
 });

@@ -1,6 +1,18 @@
 /* Chinese translations keyed by normalized English source text. Missing entries use English. */
 window.FULAI_ZH = Object.freeze({
   "Download calibration files": "下载标定文件",
+  "Refresh files": "刷新列表",
+  "Calibration file": "标定文件",
+  "Live from OSS": "实时读取 OSS",
+  "{count} files · Live from OSS": "{count} 个文件 · 实时读取 OSS",
+  "Refreshing file list…": "正在刷新文件列表…",
+  "Could not refresh. The previous list is shown; refresh before downloading.": "刷新失败，当前显示上次列表，请刷新成功后再下载。",
+  "Could not load files. Check the connection and OSS list/CORS permissions, then refresh.": "无法读取文件列表，请检查网络及 OSS 目录读取和跨域权限，然后点击刷新列表。",
+  "Files update automatically after upload. You can also refresh now.": "上传后列表自动更新，也可点击刷新立即获取。",
+  "No calibration files in this folder yet.": "此目录暂无标定文件。",
+  "Enable JavaScript to load the latest calibration files from OSS.": "请启用 JavaScript，以读取 OSS 中最新的标定文件。",
+  "Open the website to load and download the latest calibration files.": "请访问网页版，读取并下载最新的标定文件。",
+  "Could not download the files. Check your connection or refresh the list and try again.": "文件下载失败，请检查网络或刷新列表后重试。",
   "folders alongside it. Reading the guide requires no account or build step. Calibration and software downloads require an internet connection.": "文件夹放在其同级目录。阅读文档无需账号或构建步骤，下载标定文件和软件需要联网。",
   "Downloads require an internet connection. Open the website to select multiple files, or open individual files and save them.": "下载文件需要联网。请访问网页版进行多选下载，也可打开单个文件后另存为。",
   "Could not prepare the selected files. Check your connection, retry, or use Download all (ZIP).": "所选文件下载准备失败，请检查网络后重试，或使用“下载全部（ZIP）”。",
